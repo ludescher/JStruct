@@ -21,5 +21,24 @@
     "bugs": {
         "url": "https://github.com/ludescher/JStruct/issues"
     },
-    "homepage": "https://github.com/ludescher/JStruct#readme"
+    "homepage": "https://github.com/ludescher/JStruct#readme",
+    "devDependencies": {
+        "@types/babel__core": "^7.20.5",
+        "@types/babel__generator": "^7.27.0",
+        "@types/babel__template": "^7.4.4",
+        "@types/babel__traverse": "^7.20.7",
+        "@types/istanbul-lib-coverage": "^2.0.6",
+        "@types/istanbul-lib-report": "^3.0.3",
+        "@types/istanbul-reports": "^3.0.4",
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.0.10",
+        "@types/stack-utils": "^2.0.3",
+        "@types/yargs": "^17.0.33",
+        "@types/yargs-parser": "^21.0.3",
+        "jest": "^30.0.4",
+        "jest-environment-jsdom": "^30.0.4",
+        "jsdom": "^26.1.0",
+        "ts-jest": "^29.4.0",
+        "ts-node": "^10.9.2"
+    }
 }
