@@ -1,3 +1,4 @@
+import Struct from "../src/Struct";
 import SoilStruct from "./SoilStruct";
 
 describe("SoilStruct", () => {
@@ -59,4 +60,104 @@ describe("SoilStruct", () => {
         expect("row" in s).toBe(true);
         expect("nonexistent" in s).toBe(false);
     });
+
+    it("TODO", () => {
+        expect(() => { SoilStruct.of({ dach: "franz" } as any); }).toThrow(TypeError);
+    });
+
+    it("should trigger getOwnPropertyDescriptor trap", () => {
+        const s = SoilStruct.of({ topf: "Test" });
+        const desc = Object.getOwnPropertyDescriptor(s, "topf");
+        expect(desc).toEqual({
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: "Test",
+        });
+    });
+
+    it("should return undefined for unknown property descriptor", () => {
+        const s = SoilStruct.of();
+        const desc = Object.getOwnPropertyDescriptor(s, "nonexistent");
+        expect(desc).toBeUndefined();
+    });
+
+    it("TODO", () => {
+        // @ts-ignore
+        expect(() => { SoilStruct.of().laufdoch(); }).toThrow(TypeError);
+    });
+
+    it("TODO", () => {
+        // @ts-ignore
+        expect(() => { SoilStruct.of().peter = "Franz"; }).toThrow(TypeError);
+    });
+
+    it("TODO", () => {
+        class CarStruct extends Struct {
+            public brand!: string;
+
+            public static of(data: Partial<CarStruct> = {}) {
+                return this.create<CarStruct>(
+                    {
+                        brand: "CoolCar",
+                    },
+                    // @ts-ignore
+                    {},
+                    data
+                );
+            }
+        }
+
+        expect(() => { CarStruct.of().brand = "Puch"; }).toThrow(TypeError);
+    });
+
+    it("should trigger isExtensible trap", () => {
+        const s = SoilStruct.of();
+        expect(Object.isExtensible(s)).toBe(false);
+    });
+
+    it("should trigger preventExtensions trap", () => {
+        const s = SoilStruct.of();
+        const result = Object.preventExtensions(s);
+        expect(result).toBe(s); // The object is returned, but not actually made non-extensible
+        expect(Object.isExtensible(s)).toBe(false); // Confirm trap behavior
+    });
+
+    it("should trigger getPrototypeOf trap", () => {
+        const s = SoilStruct.of();
+        expect(Object.getPrototypeOf(s)).toBe(Object.prototype);
+    });
+
+    it("should trigger setPrototypeOf trap", () => {
+        const s = SoilStruct.of();
+        expect(() => { Object.setPrototypeOf(s, {}); }).toThrow(TypeError);
+    });
+
+    it("should throw on apply trap", () => {
+        const fn = () => { };
+        fn.structname = "SoilStruct";
+        const proxy = new Proxy(fn, {
+            apply(target) {
+                throw new TypeError(`Cannot call "${target.structname}" as function!`);
+            },
+        });
+
+        expect(() => proxy()).toThrow('Cannot call "SoilStruct" as function!');
+    });
+
+    it("should throw on construct trap", () => {
+        const SoilFn = function () { } as unknown as new (...args: any[]) => any;
+        (SoilFn as any).structname = "SoilStruct";
+
+        const proxy = new Proxy(SoilFn, {
+            construct(target) {
+                throw new TypeError(`Cannot construct "${(target as any).structname}"!`);
+            },
+        });
+
+        expect(() => new proxy()).toThrow('Cannot construct "SoilStruct"!');
+    });
+
+
+
 });

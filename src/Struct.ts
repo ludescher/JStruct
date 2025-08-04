@@ -29,7 +29,29 @@ abstract class Struct {
             }
         }
 
-        const OBJECT_TARGET: Partial<{ structname: string; data: T; }> = { structname: this.name, data: defaults };
+        const OBJECT_TARGET: Partial<{ structname: string; data: T; }> = {};
+
+        Object.defineProperty(OBJECT_TARGET, "structname", {
+            value: this.name,
+            configurable: false,
+            enumerable: false,
+        });
+
+        Object.defineProperty(OBJECT_TARGET, "data", {
+            value: defaults,
+            configurable: false,
+            enumerable: false,
+        });
+
+        for (const prop in defaults) {
+            Object.defineProperty(OBJECT_TARGET, prop, {
+                value: undefined,
+                configurable: true,
+                enumerable: true,
+            });
+        }
+
+        Object.preventExtensions(OBJECT_TARGET);
 
         // proxy that re-validates on `set`
         return new Proxy<typeof OBJECT_TARGET>(OBJECT_TARGET, {
@@ -38,7 +60,7 @@ abstract class Struct {
             },
 
             ownKeys(target) { // enumerate only real keys
-                return Reflect.ownKeys(target.data!);
+                return Reflect.ownKeys(target);
             },
 
             getOwnPropertyDescriptor(target, prop) { // show those keys as enumerable props
@@ -77,15 +99,33 @@ abstract class Struct {
                 throw new TypeError(`Cannot add new property "${String(prop)}" on readonly "${target.structname}"!`);
             },
 
-            // Disallowed operations
             defineProperty(target) { throw new TypeError(`Cannot define property on "${target.structname}"!`); },
             deleteProperty(target) { throw new TypeError(`Cannot delete property on "${target.structname}"!`); },
-            preventExtensions() { return false; },
-            isExtensible() { return false; },
-            getPrototypeOf() { return Object.prototype; },
-            setPrototypeOf() { return false; },
-            apply(target) { throw new TypeError(`Cannot call "${target.structname}" as function!`); },
-            construct(target) { throw new TypeError(`Cannot construct "${target.structname}"!`); },
+
+            isExtensible(target) {
+                return Object.isExtensible(target);
+            },
+
+            preventExtensions(target) {
+                Object.preventExtensions(target);
+                return !Object.isExtensible(target);
+            },
+
+            getPrototypeOf(target) {
+                return Object.getPrototypeOf(target);
+            },
+
+            setPrototypeOf() {
+                return false;
+            },
+
+            apply(target) {
+                throw new TypeError(`Cannot call "${target.structname}" as function!`);
+            },
+
+            construct(target) {
+                throw new TypeError(`Cannot construct "${target.structname}"!`);
+            },
         }) as Readonly<T>;
     }
 }
