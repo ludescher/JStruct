@@ -72,6 +72,7 @@ abstract class Struct {
                         value: target.data![prop as keyof T],
                     };
                 }
+
                 return Reflect.getOwnPropertyDescriptor(target, prop);
             },
 
@@ -80,19 +81,19 @@ abstract class Struct {
                     return target.data![prop as keyof T];
                 }
 
-                const val = Reflect.get(target, prop, receiver);
+                const UNKNOWN_VALUE = Reflect.get(target, prop, receiver);
 
-                return typeof val === "function" ? val.bind(target) : undefined;
+                return typeof UNKNOWN_VALUE === "function" ? UNKNOWN_VALUE.bind(target) : undefined;
             },
 
             set(target, prop, value) {
-                // Only allow updating existing fields on _data
                 if (typeof prop === "string" && Reflect.has(target.data!, prop)) {
                     if (prop in VALIDATORS) {
                         target.data![prop as keyof T] = VALIDATORS[prop as keyof T](value);
                     } else {
                         throw new TypeError(`Validator for property "${String(prop)}" is not defined on "${target.structname}"!`);
                     }
+
                     return true;
                 }
 
@@ -108,6 +109,7 @@ abstract class Struct {
 
             preventExtensions(target) {
                 Object.preventExtensions(target);
+
                 return !Object.isExtensible(target);
             },
 
