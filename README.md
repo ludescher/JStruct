@@ -1,5 +1,3 @@
-# Struct
-
 A lightweight, type-safe, and immutable data structure utility for JavaScript and TypeScript.  
 Built around a single abstract class `Struct`, this package allows you to define strict, validated, and readonly objects with minimal boilerplate.
 
