@@ -127,3 +127,16 @@ export const IMMUTABLE_TRAPS: ProxyHandler<any> = {
         throw new TypeError("Cannot delete property on readonly struct");
     }
 } as const;
+
+export function clone<T extends object>(obj: T): T {
+    const proto = Object.getPrototypeOf(obj);
+    const clone = Object.create(proto) as T;
+
+    // Only own keys—strings + symbols
+    for (const key of Reflect.ownKeys(obj)) {
+        const desc = Object.getOwnPropertyDescriptor(obj, key)!;
+        Object.defineProperty(clone, key, desc);
+    }
+
+    return clone;
+}

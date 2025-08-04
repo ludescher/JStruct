@@ -1,4 +1,4 @@
-import { deepFreeze, IMMUTABLE_TRAPS, MUTABLE_TRAPS, normalizeValidator } from "./Utils";
+import { clone, deepFreeze, IMMUTABLE_TRAPS, MUTABLE_TRAPS, normalizeValidator } from "./Utils";
 import ValidatorMapType from "./ValidatorMapType";
 
 class StructBase<T extends object> {
@@ -20,7 +20,7 @@ class StructBase<T extends object> {
         }
 
         // 2. Merge + run validators exactly once on override
-        const merged = { ...defaults } as T;
+        const merged = clone(defaults) as T;
         for (const k in override) {
             if (override[k] !== undefined) {
                 merged[k] = validators[k]!(override[k]);
@@ -37,26 +37,38 @@ class StructBase<T extends object> {
         rawValidators: Record<keyof T, any>,
         override: Partial<T> = {}
     ): StructBase<T> & Readonly<T> {
-        // 1. Normalize every rawValidators[k] → (x: unknown) => T[K]
+        // 1) normalize user’s rawValidators → strict, throwing validators
         const validators = {} as ValidatorMapType<T>;
         for (const k in rawValidators) {
             validators[k] = normalizeValidator(k, rawValidators[k]);
         }
 
-        // 2. Merge + run validators exactly once on override
-        const merged = { ...defaults } as T;
+        // 2) Clone + preserve inherited getters/setters
+        const merged = clone(defaults) as T;
+
+        // 3) Run validators on *every* default field
+        for (const k in validators) {
+            // if someone omitted a default key, this will throw
+            merged[k] = validators[k](merged[k]);
+        }
+
+        // 4) Run validators on any overrides
         for (const k in override) {
             if (override[k] !== undefined) {
                 merged[k] = validators[k]!(override[k]);
             }
         }
+
+        // 5) Deep-freeze the merged object
         const frozen = deepFreeze(merged);
 
-        // wrap
+        // 6) Create a StructBase instance, stash validators + overrides bucket
         const inst = new StructBase(frozen);
+        // inst[OVERRIDES] = {} as Partial<T>;
+        // inst[VALIDATORS] = validators;
 
+        // 7) Return the proxy that re-validates on `set`
         return new Proxy(inst, IMMUTABLE_TRAPS) as StructBase<T> & Readonly<T>;
-
     }
 
     toJSON() {

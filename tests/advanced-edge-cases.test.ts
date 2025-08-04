@@ -154,10 +154,9 @@ describe('5. Enum-specific validations', () => {
     // Create an immutable instance
     const cs = StructBase.createImmutable({ color: Colors.RED }, validators);
 
-    test('setter bypasses re-validation after creation', () => {
+    test('setter try to bypasses validation after creation', () => {
         // Bypass the readonly/validator layer by casting to any
-        ; (cs as any).color = 'GREEN';
-        expect((cs as any).color).toBe('GREEN');
+        expect(() => (cs as any).color = 'GREEN').toThrow(TypeError);
     });
 });
 
