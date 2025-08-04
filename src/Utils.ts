@@ -1,61 +1,31 @@
-export function deepFreeze<U extends object>(obj: U): U {
-    Object.getOwnPropertyNames(obj).forEach(key => {
-        const val = (obj as any)[key];
-        if (val && typeof val === "object") {
-            deepFreeze(val);
-        }
-    });
-    return Object.freeze(obj);
+import ValidatorFunctionType from "./ValidatorFunctionType";
+
+export function normalizeValidator<T>(key: string, v: any): (x: unknown) => T {
+    if (v === String || v === Number || v === Boolean) {
+        return (x: unknown) => {
+            if (typeof x !== typeof (v as any)()) {
+                throw new TypeError(`Property "${key}" expected ${v.name} and not "${x}" of type "${typeof x}"!`);
+            }
+
+            return x as T;
+        };
+    }
+
+    if (Array.isArray(v) && v.length === 1) {
+        const VALIDATOR_FUNCTION = normalizeValidator(key, v[0]);
+
+        return (x: unknown) => {
+            if (!Array.isArray(x)) {
+                throw new TypeError(`Property "${key}" expected array and not "${x}" of type "${typeof x}"!`);
+            }
+
+            return x.map(VALIDATOR_FUNCTION) as any as T;
+        };
+    }
+
+    if (typeof v === "function" && v.length === 1) {
+        return v as ValidatorFunctionType<T>;
+    }
+
+    throw new TypeError(`Invalid validator for property "${key}"`);
 }
-
-export const MUTABLE_TRAPS: ProxyHandler<any> = {
-    get(target, prop, receiver) {
-        const val = Reflect.get(target, prop, receiver);
-        if (typeof prop === "string" && prop in target._data) {
-            return target._data[prop];
-        }
-        return typeof val === "function" ? val.bind(target) : val;
-    },
-
-    set(target, prop, value) {
-        // Only allow updating existing fields on _data
-        if (typeof prop === "string" && prop in target._data) {
-            // Validate? You can re-run validators here if needed
-            target._data[prop] = value;
-            return true;
-        }
-        throw new TypeError(
-            `Cannot add new property '${String(prop)}' to struct`
-        );
-    },
-
-    defineProperty() {
-        throw new TypeError("Cannot define property on struct");
-    },
-
-    deleteProperty() {
-        throw new TypeError("Cannot delete property on struct");
-    }
-} as const;
-
-export const IMMUTABLE_TRAPS: ProxyHandler<any> = {
-    get(target, prop, receiver) {
-        const val = Reflect.get(target, prop, receiver);
-        if (typeof prop === "string" && prop in (target as any)._data) {
-            return (target as any)._data[prop];
-        }
-        return typeof val === "function" ? val.bind(target) : val;
-    },
-
-    set() {
-        throw new TypeError("Cannot modify readonly struct");
-    },
-
-    defineProperty() {
-        throw new TypeError("Cannot define property on readonly struct");
-    },
-
-    deleteProperty() {
-        throw new TypeError("Cannot delete property on readonly struct");
-    }
-} as const;
