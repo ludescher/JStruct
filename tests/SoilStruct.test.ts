@@ -39,7 +39,7 @@ describe("SoilStruct.of - invalid input", () => {
 });
 
 describe("SoilStruct.of - partial input", () => {
-    it("should apply defaults for missing fields", () => {
+    it("should apply default values when some fields are missing", () => {
         const instance = SoilStruct.of({ topf: "B2" });
 
         expect(instance.row).toBe(0);

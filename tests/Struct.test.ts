@@ -10,7 +10,7 @@ describe("SoilStruct", () => {
         expect(s.amount).toBe(0);
     });
 
-    it("should override values", () => {
+    it("should override default values via constructor", () => {
         const s = SoilStruct.of({ row: 5, topf: "Test" });
         expect(s.row).toBe(5);
         expect(s.topf).toBe("Test");
@@ -20,7 +20,7 @@ describe("SoilStruct", () => {
         expect(() => SoilStruct.of({ row: "not a number" as any })).toThrow("row must be a number");
     });
 
-    it("should allow updating existing fields", () => {
+    it("should allow updating existing fields with valid values", () => {
         const s = SoilStruct.of();
         (s as any).row = 10;
         expect(s.row).toBe(10);
@@ -50,7 +50,7 @@ describe("SoilStruct", () => {
         ).toThrow('Cannot define property on "SoilStruct"!');
     });
 
-    it("should list keys correctly", () => {
+    it("should return correct list of keys via Object.keys", () => {
         const s = SoilStruct.of();
         expect(Object.keys(s)).toEqual(["row", "topf", "woche", "amount"]);
     });
@@ -61,7 +61,7 @@ describe("SoilStruct", () => {
         expect("nonexistent" in s).toBe(false);
     });
 
-    it("TODO", () => {
+    it("should throw when unknown property is passed to constructor", () => {
         expect(() => { SoilStruct.of({ dach: "franz" } as any); }).toThrow(TypeError);
     });
 
@@ -82,17 +82,17 @@ describe("SoilStruct", () => {
         expect(desc).toBeUndefined();
     });
 
-    it("TODO", () => {
+    it("should throw when calling undefined method", () => {
         // @ts-ignore
         expect(() => { SoilStruct.of().laufdoch(); }).toThrow(TypeError);
     });
 
-    it("TODO", () => {
+    it("should throw when assigning undefined property", () => {
         // @ts-ignore
         expect(() => { SoilStruct.of().peter = "Franz"; }).toThrow(TypeError);
     });
 
-    it("TODO", () => {
+    it("should throw when modifying readonly property in subclass", () => {
         class CarStruct extends Struct {
             public brand!: string;
 
