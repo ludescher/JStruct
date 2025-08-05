@@ -6,6 +6,8 @@ class SoilStruct extends Struct {
     public woche!: number;
     public amount!: number;
 
+    private constructor() { super(); }
+
     public static of(data: Partial<SoilStruct> = {}) {
         return this.create<SoilStruct>(
             {
