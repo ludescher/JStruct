@@ -2,6 +2,9 @@
     "name": "@ludescher/struct",
     "version": "1.0.0",
     "description": "A lightweight, type-safe, and immutable data structure utility for JavaScript and TypeScript.",
+    "publishConfig": {
+        "access": "public"
+    },
     "main": "index.js",
     "directories": {
         "test": "tests"
