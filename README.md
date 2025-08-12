@@ -146,7 +146,7 @@ The returned object is a generic object with getter|setter's that enforces:
 - Type validation on assignment
 - Readonly structure (no new fields, no deletion)
 - Prevents extensions and prototype manipulation
-- Only data properties are allowed — methods are disallowed. For helper logic, use static functions or external utility classes.
+- Only data properties are allowed, methods are disallowed. For helper logic, use static functions or external utility classes.
 
 ---
 
