@@ -33,12 +33,12 @@ describe("SoilStruct", () => {
 
     it("should throw when adding new property", () => {
         const s = SoilStruct.of();
-        expect(() => ((s as any).newProp = 123)).toThrow('Cannot add new property "newProp" on readonly "SoilStruct"!');
+        expect(() => ((s as any).newProp = 123)).toThrow('Cannot add property newProp, object is not extensible');
     });
 
     it("should throw when deleting property", () => {
         const s = SoilStruct.of();
-        expect(() => delete (s as any).row).toThrow('Cannot delete property on "SoilStruct"!');
+        expect(() => delete (s as any).row).toThrow(`Cannot delete property 'row' of [object Object]`);
     });
 
     it("should throw when defining property", () => {
@@ -47,7 +47,7 @@ describe("SoilStruct", () => {
             Object.defineProperty(s, "row", {
                 value: 100,
             })
-        ).toThrow('Cannot define property on "SoilStruct"!');
+        ).toThrow('Cannot redefine property: row');
     });
 
     it("should return correct list of keys via Object.keys", () => {
@@ -69,10 +69,10 @@ describe("SoilStruct", () => {
         const s = SoilStruct.of({ topf: "Test" });
         const desc = Object.getOwnPropertyDescriptor(s, "topf");
         expect(desc).toEqual({
-            configurable: true,
+            get: expect.any(Function),
+            set: expect.any(Function),
             enumerable: true,
-            writable: true,
-            value: "Test",
+            configurable: false,
         });
     });
 

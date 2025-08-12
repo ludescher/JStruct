@@ -48,3 +48,19 @@ describe("SoilStruct.of - partial input", () => {
         expect(instance.amount).toBe(0);
     });
 });
+
+describe("SoilStruct.of - constructor object - props", () => {
+    it("should return an instance with the correct constructor name", () => {
+        const instance = SoilStruct.of({ topf: "B2" });
+        expect(instance.constructor.name).toBe("SoilStruct");
+    });
+});
+
+describe('SoilStruct constructor is not allowed', () => {
+    it('should throw when constructor is called directly', () => {
+        expect(() => {
+            // @ts-expect-error: We're intentionally violating the abstract class usage
+            new SoilStruct();
+        }).toThrow('The constructor of a Struct cannot be called! use "of" instead!');
+    });
+});

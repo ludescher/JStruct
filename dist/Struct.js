@@ -1,6 +1,8 @@
 import { normalizeValidator } from "./Utils";
 class Struct {
-    constructor() { }
+    constructor() {
+        throw new Error(`The constructor of a Struct cannot be called! use "of" instead!`);
+    }
     static create(defaults, rawValidators, override = {}) {
         const VALIDATORS = {};
         for (const k in rawValidators) {
@@ -17,84 +19,35 @@ class Struct {
                 defaults[k] = VALIDATORS[k](override[k]);
             }
         }
-        const OBJECT_TARGET = {};
-        Object.defineProperty(OBJECT_TARGET, "structname", {
-            value: this.name,
-            configurable: false,
+        const DATA_KEY = Symbol('hidden');
+        const OBJECT_TARGET = { [DATA_KEY]: defaults };
+        Object.defineProperty(OBJECT_TARGET, 'constructor', {
+            value: { name: this.name },
+            writable: false,
             enumerable: false,
-        });
-        Object.defineProperty(OBJECT_TARGET, "data", {
-            value: defaults,
-            configurable: false,
-            enumerable: false,
+            configurable: false
         });
         for (const prop in defaults) {
             Object.defineProperty(OBJECT_TARGET, prop, {
-                value: undefined,
-                configurable: true,
+                get() {
+                    return OBJECT_TARGET[DATA_KEY][prop];
+                },
+                set(value) {
+                    if (prop in VALIDATORS) {
+                        OBJECT_TARGET[DATA_KEY][prop] = VALIDATORS[prop](value);
+                    }
+                    else {
+                        throw new TypeError(`Validator for property "${String(prop)}" is not defined on "${this.name}"!`);
+                    }
+                },
                 enumerable: true,
+                configurable: true
             });
         }
         Object.preventExtensions(OBJECT_TARGET);
-        return new Proxy(OBJECT_TARGET, {
-            has(target, prop) {
-                return Reflect.has(target.data, prop);
-            },
-            ownKeys(target) {
-                return Reflect.ownKeys(target);
-            },
-            getOwnPropertyDescriptor(target, prop) {
-                if (Reflect.has(target.data, prop)) {
-                    return {
-                        configurable: true,
-                        enumerable: true,
-                        writable: true,
-                        value: target.data[prop],
-                    };
-                }
-                return Reflect.getOwnPropertyDescriptor(target, prop);
-            },
-            get(target, prop, receiver) {
-                if (typeof prop === "string" && Reflect.has(target.data, prop)) {
-                    return target.data[prop];
-                }
-                const UNKNOWN_VALUE = Reflect.get(target, prop, receiver);
-                return typeof UNKNOWN_VALUE === "function" ? UNKNOWN_VALUE.bind(target) : undefined;
-            },
-            set(target, prop, value) {
-                if (typeof prop === "string" && Reflect.has(target.data, prop)) {
-                    if (prop in VALIDATORS) {
-                        target.data[prop] = VALIDATORS[prop](value);
-                    }
-                    else {
-                        throw new TypeError(`Validator for property "${String(prop)}" is not defined on "${target.structname}"!`);
-                    }
-                    return true;
-                }
-                throw new TypeError(`Cannot add new property "${String(prop)}" on readonly "${target.structname}"!`);
-            },
-            defineProperty(target) { throw new TypeError(`Cannot define property on "${target.structname}"!`); },
-            deleteProperty(target) { throw new TypeError(`Cannot delete property on "${target.structname}"!`); },
-            isExtensible(target) {
-                return Object.isExtensible(target);
-            },
-            preventExtensions(target) {
-                Object.preventExtensions(target);
-                return !Object.isExtensible(target);
-            },
-            getPrototypeOf(target) {
-                return Object.getPrototypeOf(target);
-            },
-            setPrototypeOf() {
-                return false;
-            },
-            apply(target) {
-                throw new TypeError(`Cannot call "${target.structname}" as function!`);
-            },
-            construct(target) {
-                throw new TypeError(`Cannot construct "${target.structname}"!`);
-            },
-        });
+        Object.seal(OBJECT_TARGET);
+        Object.freeze(OBJECT_TARGET);
+        return OBJECT_TARGET;
     }
 }
 export default Struct;

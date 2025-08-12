@@ -2,7 +2,9 @@ import { normalizeValidator } from "./Utils";
 import ValidatorMapType from "./ValidatorMapType";
 
 abstract class Struct {
-    public constructor() { }
+    public constructor() {
+        throw new Error(`The constructor of a Struct cannot be called! use "of" instead!`);
+    }
 
     protected static create<T extends object>(
         defaults: T,
@@ -29,106 +31,38 @@ abstract class Struct {
             }
         }
 
-        const OBJECT_TARGET: Partial<{ structname: string; data: T; }> = {};
+        const DATA_KEY: unique symbol = Symbol('hidden');
+        const OBJECT_TARGET: Partial<T & { [DATA_KEY]: T; }> = { [DATA_KEY]: defaults as T } as T;
 
-        Object.defineProperty(OBJECT_TARGET, "structname", {
-            value: this.name,
-            configurable: false,
+        Object.defineProperty(OBJECT_TARGET, 'constructor', {
+            value: { name: this.name },
+            writable: false,
             enumerable: false,
-        });
-
-        Object.defineProperty(OBJECT_TARGET, "data", {
-            value: defaults,
-            configurable: false,
-            enumerable: false,
+            configurable: false
         });
 
         for (const prop in defaults) {
             Object.defineProperty(OBJECT_TARGET, prop, {
-                value: undefined,
-                configurable: true,
+                get() {
+                    return OBJECT_TARGET[DATA_KEY]![prop];
+                },
+                set(value) {
+                    if (prop in VALIDATORS) {
+                        (OBJECT_TARGET[DATA_KEY]![prop as keyof T] as T[keyof T]) = VALIDATORS[prop as keyof T](value);
+                    } else {
+                        throw new TypeError(`Validator for property "${String(prop)}" is not defined on "${this.name}"!`);
+                    }
+                },
                 enumerable: true,
+                configurable: true
             });
         }
 
         Object.preventExtensions(OBJECT_TARGET);
+        Object.seal(OBJECT_TARGET);
+        Object.freeze(OBJECT_TARGET);
 
-        // proxy that re-validates on `set`
-        return new Proxy<typeof OBJECT_TARGET>(OBJECT_TARGET, {
-            has(target, prop) { // make `in` work
-                return Reflect.has(target.data!, prop);
-            },
-
-            ownKeys(target) { // enumerate only real keys
-                return Reflect.ownKeys(target);
-            },
-
-            getOwnPropertyDescriptor(target, prop) { // show those keys as enumerable props
-                if (Reflect.has(target.data!, prop)) {
-                    return {
-                        configurable: true,
-                        enumerable: true,
-                        writable: true,
-                        value: target.data![prop as keyof T],
-                    };
-                }
-
-                return Reflect.getOwnPropertyDescriptor(target, prop);
-            },
-
-            get(target, prop, receiver) {
-                if (typeof prop === "string" && Reflect.has(target.data!, prop)) {
-                    return target.data![prop as keyof T];
-                }
-
-                const UNKNOWN_VALUE = Reflect.get(target, prop, receiver);
-
-                return typeof UNKNOWN_VALUE === "function" ? UNKNOWN_VALUE.bind(target) : undefined;
-            },
-
-            set(target, prop, value) {
-                if (typeof prop === "string" && Reflect.has(target.data!, prop)) {
-                    if (prop in VALIDATORS) {
-                        target.data![prop as keyof T] = VALIDATORS[prop as keyof T](value);
-                    } else {
-                        throw new TypeError(`Validator for property "${String(prop)}" is not defined on "${target.structname}"!`);
-                    }
-
-                    return true;
-                }
-
-                throw new TypeError(`Cannot add new property "${String(prop)}" on readonly "${target.structname}"!`);
-            },
-
-            defineProperty(target) { throw new TypeError(`Cannot define property on "${target.structname}"!`); },
-            deleteProperty(target) { throw new TypeError(`Cannot delete property on "${target.structname}"!`); },
-
-            isExtensible(target) {
-                return Object.isExtensible(target);
-            },
-
-            preventExtensions(target) {
-                Object.preventExtensions(target);
-
-                return !Object.isExtensible(target);
-            },
-
-            getPrototypeOf(target) {
-                return Object.getPrototypeOf(target);
-            },
-
-            setPrototypeOf() {
-                return false;
-            },
-
-            apply(target) {
-                throw new TypeError(`Cannot call "${target.structname}" as function!`);
-            },
-
-            construct(target) {
-                throw new TypeError(`Cannot construct "${target.structname}"!`);
-            },
-        }) as Readonly<T>;
+        return OBJECT_TARGET as T;
     }
 }
 
