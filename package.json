@@ -1,5 +1,5 @@
 {
-    "name": "@ludescher/struct",
+    "name": "@ludeschersoftware/struct",
     "version": "1.0.0",
     "description": "A lightweight, type-safe, and immutable data structure utility for JavaScript and TypeScript.",
     "publishConfig": {

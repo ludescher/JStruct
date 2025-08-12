@@ -16,7 +16,7 @@ Built around a single abstract class `Struct`, this package allows you to define
 ## 📦 Installation
 
 ```bash
-npm install @ludescher/struct
+npm install @ludeschersoftware/struct
 ```
 
 ---
@@ -34,7 +34,7 @@ Only the `Struct` class is exposed publicly—it's the default export of the pac
 ### 1. Define Your Struct
 
 ```ts
-import Struct from "@ludescher/struct";
+import Struct from "@ludeschersoftware/struct";
 
 class SoilStruct extends Struct {
   public row!: number;
