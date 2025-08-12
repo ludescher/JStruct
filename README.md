@@ -9,7 +9,6 @@ Built around a single abstract class `Struct`, this package allows you to define
 - ✅ Custom validators for each field
 - ✅ Automatic default values
 - ✅ Immutable and readonly instances
-- ✅ Proxy-based enforcement of structure
 - ✅ Clear error messages for invalid input
 
 ---
@@ -139,14 +138,15 @@ You can use:
 
 ---
 
-## 🔒 Proxy Behavior
+## 🔒 Struct Behavior
 
-The returned object is wrapped in a proxy that enforces:
+The returned object is a generic object with getter|setter's that enforces:
 
 - Field existence
 - Type validation on assignment
 - Readonly structure (no new fields, no deletion)
 - Prevents extensions and prototype manipulation
+- Only data properties are allowed, methods are disallowed. For helper logic, use static functions or external utility classes.
 
 ---
 
