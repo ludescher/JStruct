@@ -64,3 +64,17 @@ describe('SoilStruct constructor is not allowed', () => {
         }).toThrow('The constructor of a Struct cannot be called! use "of" instead!');
     });
 });
+
+describe('SoilStruct instanceof behavior', () => {
+    it('should return true for instances created via SoilStruct.of()', () => {
+        const instance = SoilStruct.of({ topf: "B2" });
+
+        expect(instance instanceof SoilStruct).toBe(true);
+    });
+
+    it('should return false for plain objects', () => {
+        const fakeInstance = { name: 'Bob', age: 25 };
+
+        expect(fakeInstance instanceof SoilStruct).toBe(false);
+    });
+});

@@ -150,6 +150,21 @@ The returned object is a generic object with getter|setter's that enforces:
 
 ---
 
+## 🧬 Advanced Features
+
+### `instanceof` Support
+
+Structs created via `.of()` behave like native class instances:
+
+```ts
+const soil = SoilStruct.of();
+soil instanceof SoilStruct; // ✅ true
+```
+
+This is achieved by dynamically patching the class's `Symbol.hasInstance` method. It ensures that `instanceof` checks work correctly even though instances are constructed via a static factory method.
+
+---
+
 ## Contributing
 
 1. Fork the repo

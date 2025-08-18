@@ -1,9 +1,21 @@
 import { normalizeValidator } from "./Utils";
 class Struct {
+    static PatchInstanceOf() {
+        if (this.PATCHED_CLASSES.has(this) === false) {
+            Object.defineProperty(this, Symbol.hasInstance, {
+                value: (obj) => {
+                    return obj?.constructor?.name === this.name;
+                },
+                configurable: true
+            });
+            this.PATCHED_CLASSES.add(this);
+        }
+    }
     constructor() {
         throw new Error(`The constructor of a Struct cannot be called! use "of" instead!`);
     }
     static create(defaults, rawValidators, override = {}) {
+        this.PatchInstanceOf();
         const VALIDATORS = {};
         for (const k in rawValidators) {
             VALIDATORS[k] = normalizeValidator(k, rawValidators[k]);
@@ -50,5 +62,6 @@ class Struct {
         return OBJECT_TARGET;
     }
 }
+Struct.PATCHED_CLASSES = new WeakSet();
 export default Struct;
 //# sourceMappingURL=Struct.js.map

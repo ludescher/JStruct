@@ -2,6 +2,21 @@ import { normalizeValidator } from "./Utils";
 import ValidatorMapType from "./ValidatorMapType";
 
 abstract class Struct {
+    private static PATCHED_CLASSES = new WeakSet<Function>();
+
+    private static PatchInstanceOf(): void {
+        if (this.PATCHED_CLASSES.has(this) === false) {
+            Object.defineProperty(this, Symbol.hasInstance, {
+                value: (obj: any) => {
+                    return obj?.constructor?.name === this.name;
+                },
+                configurable: true
+            });
+
+            this.PATCHED_CLASSES.add(this);
+        }
+    }
+
     public constructor() {
         throw new Error(`The constructor of a Struct cannot be called! use "of" instead!`);
     }
@@ -11,6 +26,8 @@ abstract class Struct {
         rawValidators: Record<keyof T, any>,
         override: Partial<T> = {}
     ): T {
+        this.PatchInstanceOf();
+
         // normalize subclass's Validators → strict, throwing validators
         const VALIDATORS = {} as ValidatorMapType<T>;
 

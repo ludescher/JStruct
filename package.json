@@ -1,6 +1,6 @@
 {
     "name": "@ludeschersoftware/struct",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A lightweight, type-safe, and immutable data structure utility for JavaScript and TypeScript.",
     "publishConfig": {
         "access": "public"
@@ -52,7 +52,8 @@
         "jest": "^30.0.4",
         "jest-environment-jsdom": "^30.0.4",
         "jsdom": "^26.1.0",
-        "ts-jest": "^29.4.0",
-        "ts-node": "^10.9.2"
+        "ts-jest": "^29.4.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.9.2"
     }
 }

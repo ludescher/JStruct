@@ -1,4 +1,6 @@
 declare abstract class Struct {
+    private static PATCHED_CLASSES;
+    private static PatchInstanceOf;
     constructor();
     protected static create<T extends object>(defaults: T, rawValidators: Record<keyof T, any>, override?: Partial<T>): T;
 }
