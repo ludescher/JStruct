@@ -25,7 +25,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ludescher/JStruct.git"
+        "url": "git+https://github.com/ludeschersoftware/JStruct.git"
     },
     "keywords": [
         "Struct"
@@ -33,9 +33,9 @@
     "author": "Johannes Ludescher",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/ludescher/JStruct/issues"
+        "url": "https://github.com/ludeschersoftware/JStruct/issues"
     },
-    "homepage": "https://github.com/ludescher/JStruct#readme",
+    "homepage": "https://github.com/ludeschersoftware/JStruct#readme",
     "devDependencies": {
         "@types/babel__core": "^7.20.5",
         "@types/babel__generator": "^7.27.0",
